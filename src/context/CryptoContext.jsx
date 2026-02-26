@@ -1,9 +1,9 @@
-import { createContext, useState, useContext } from 'react';
+import { createContext, useContext, useState } from 'react';
 
 const CryptoContext = createContext();
 
 export const CryptoProvider = ({ children }) => {
-  const [coins, setCoins] = useState([]);
+  const [coins, setCoins] = useState([]); // This stores the data globally
   const [currency, setCurrency] = useState('usd');
 
   return (
