@@ -7,28 +7,27 @@ export const useFetchCrypto = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (coins && coins.length > 0) {
-      setLoading(false);
-      return;
-    }
+    // If we have coins for this currency already, don't flash the loader
+    if (coins && coins.length > 0 && !loading) return;
 
     const fetchMarket = async () => {
       setLoading(true);
       try {
         const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=10&page=1`);
-        if (res.status === 429) throw new Error("Rate limit hit.");
-        if (!res.ok) throw new Error("API Failure");
+        if (!res.ok) throw new Error("API Limit reached");
         const data = await res.json();
         setCoins(data);
         setError(null);
       } catch (err) {
         setError(err.message);
       } finally {
-        setTimeout(() => setLoading(false), 800);
+        // Keeps the indicator visible long enough to be consistent
+        setTimeout(() => setLoading(false), 600);
       }
     };
+
     fetchMarket();
-  }, [currency, setCoins, coins]);
+  }, [currency, setCoins]);
 
   return { loading, error };
 };
