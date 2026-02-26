@@ -7,10 +7,10 @@ export const useFetchCrypto = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // ONLY fetch if we don't have coins yet
-    if (coins.length > 0) {
-        setLoading(false);
-        return; 
+    // CRITICAL: If coins already exist, STOP. Do not fetch again.
+    if (coins && coins.length > 0) {
+      setLoading(false);
+      return;
     }
 
     const fetchMarket = async () => {
@@ -18,8 +18,8 @@ export const useFetchCrypto = () => {
       try {
         const res = await fetch(`https://api.coingecko.com/api/v3/coins/markets?vs_currency=${currency}&order=market_cap_desc&per_page=10&page=1`);
         
-        if (res.status === 429) throw new Error("Rate Limit! Wait 60s.");
-        if (!res.ok) throw new Error("API Error");
+        if (res.status === 429) throw new Error("Rate Limit: Stop clicking so fast! Wait 60s.");
+        if (!res.ok) throw new Error("API is down.");
         
         const data = await res.json();
         setCoins(data);
@@ -27,12 +27,13 @@ export const useFetchCrypto = () => {
       } catch (err) {
         setError(err.message);
       } finally {
-        setTimeout(() => setLoading(false), 800);
+        // Keep the loader visible for a split second for "feel"
+        setTimeout(() => setLoading(false), 500);
       }
     };
 
     fetchMarket();
-  }, [currency, setCoins, coins.length]); // Added coins.length to dependency
+  }, [currency, setCoins, coins]); // Depend on coins array
 
   return { loading, error };
 };
